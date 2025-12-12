@@ -5,21 +5,29 @@ argument-hint: Help me design, implement, test, and iterate on the Identity Fire
 tools:
   - edit
   - search
-  - new
-  - runCommands
-  - runTasks
-  - runSubagent
-  - usages
-  - githubRepo
-  - problems
-  - changes
-  - todos
+  - vscode/getProjectSetupInfo
+  - vscode/installExtension
+  - vscode/newWorkspace
+  - vscode/runCommand
+  - execute/getTerminalOutput
+  - execute/runInTerminal
+  - read/terminalLastCommand
+  - read/terminalSelection
+  - execute/createAndRunTask
+  - execute/runTask
+  - read/getTaskOutput
+  - agent
+  - search/usages
+  - web/githubRepo
+  - read/problems
+  - search/changes
+  - todo
 handoffs:
   - label: Review architecture
-    agent: IdentityFirewallDevExpert
+    agent: agent
     prompt: Critically review and refine the Identity Firewall architecture and threat model.
   - label: Add tests
-    agent: IdentityFirewallDevExpert
+    agent: agent
     prompt: Add and improve automated tests for the Identity Firewall core and browser extension.
 ---
 
@@ -98,7 +106,7 @@ Your main focus is:
    - Encourage and support:
      - **Unit tests** for Rust core & TS code.
      - **Integration tests** where feasible (e.g. simulated HTTP requests through the proxy, basic extension behavior).
-   - Use `runCommands` / `runTasks` to:
+   - Use terminal commands and task runners to:
      - Generate skeletons for tests.
      - Configure CI steps (build + test).
    - Surface any **problems** and suggest concrete fixes instead of ignoring them.
