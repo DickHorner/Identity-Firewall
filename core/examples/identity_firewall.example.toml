@@ -1,0 +1,36 @@
+# Example Identity Firewall config
+# Define personas and rules mapping hosts to personas.
+
+[[personas]]
+id = "standard"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0"
+accept_language = "en-US,en;q=0.9"
+languages = ["en-US", "en"]
+timezone = "America/New_York"
+
+[personas.screen]
+width = 1920
+height = 1080
+color_depth = 24
+pixel_ratio = 1.0
+
+[[personas]]
+id = "research"
+user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+accept_language = "en-GB,en;q=0.8"
+languages = ["en-GB", "en"]
+timezone = "Europe/London"
+
+[personas.screen]
+width = 1440
+height = 900
+color_depth = 24
+pixel_ratio = 2.0
+
+[[rules]]
+pattern = { Exact = "example.com" }
+persona_id = "standard"
+
+[[rules]]
+pattern = { Suffix = ".research.example.com" }
+persona_id = "research"
