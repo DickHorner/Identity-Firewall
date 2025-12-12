@@ -7,7 +7,7 @@ pub mod policy;
 pub mod rules;
 
 pub use config::{Config, ConfigError};
-pub use logging::LogEntry;
+pub use logging::{FileLogger, LogEntry, Logger, MultiLogger, StdoutLogger};
 pub use persona::{Persona, Screen};
 pub use policy::Policy;
 pub use rules::{Rule, RulePattern};
