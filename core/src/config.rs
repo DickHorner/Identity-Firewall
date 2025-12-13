@@ -78,7 +78,7 @@ impl TryFrom<Config> for Policy {
 #[cfg(test)]
 mod tests {
     use super::{Config, ConfigError};
-    use crate::{Policy, RulePattern};
+    use crate::Policy;
 
     const SIMPLE_TOML: &str = r#"
 [[personas]]
@@ -173,9 +173,9 @@ persona_id = "p2"
             .and_then(Policy::try_from)
             .unwrap();
 
-        // First matching rule wins (order preserved)
+        // Rules sorted by specificity: Exact (most specific) wins over Suffix
         let persona = policy.resolve_persona("shop.example.com").unwrap();
-        assert_eq!(persona.id, "p1");
+        assert_eq!(persona.id, "p2");
 
         assert_eq!(policy.rules().len(), 2);
     }

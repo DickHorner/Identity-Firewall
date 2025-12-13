@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Screen {
     pub width: u32,
     pub height: u32,
@@ -8,7 +8,7 @@ pub struct Screen {
     pub pixel_ratio: Option<f32>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Persona {
     pub id: String,
     pub user_agent: Option<String>,
