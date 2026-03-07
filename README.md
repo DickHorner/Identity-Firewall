@@ -4,13 +4,14 @@ A policy-driven identity layer for browsers and network traffic that controls wh
 
 ## Project Status
 
-**Current Stage**: Core implementation (Step 1-5 complete)
+**Current Stage**: Core + Browser Extension (Steps 1-4 complete)
 
 ✅ Rust core with policy engine  
 ✅ Configuration loading (TOML/JSON)  
 ✅ Rule patterns with specificity ordering  
 ✅ Logging infrastructure  
-⬜ Browser extension (next)  
+✅ Browser extension (TypeScript/Manifest V3)  
+⬜ HTTP/WASM integration (next)  
 ⬜ GUI (optional, future)
 
 ## Quick Links
@@ -19,24 +20,38 @@ A policy-driven identity layer for browsers and network traffic that controls wh
 - [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md) – Security analysis
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) – System design
 - [core/README.md](core/README.md) – Core library usage
+- [extension/README.md](extension/README.md) – Extension development
 
 ## Repository Structure
 
 ```
-├── core/                   # Rust policy engine
+├── core/                   # Rust policy engine (28 KB)
 │   ├── src/
 │   │   ├── persona.rs      # Identity profile definitions
 │   │   ├── rules.rs        # Pattern matching
 │   │   ├── policy.rs       # Persona resolution
-│   │   ├── config.rs       # Configuration loading
+│   │   ├── config.rs       # Configuration loading (TOML/JSON)
 │   │   └── logging.rs      # Logging infrastructure
+│   ├── Cargo.toml
 │   └── examples/
 │       └── identity_firewall.example.toml
-├── extension/              # Browser extension (TODO)
+├── extension/              # Browser extension (TypeScript)
+│   ├── src/
+│   │   ├── types.ts        # Shared interfaces
+│   │   ├── background.ts   # Service Worker
+│   │   └── content.ts      # Content Script
+│   ├── ui/
+│   │   ├── popup.html      # Popup interface
+│   │   └── popup.ts        # Popup controller
+│   ├── manifest.json       # Manifest V3
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── README.md
 ├── docs/
-│   ├── THREAT_MODEL.md
-│   └── ARCHITECTURE.md
-└── PROJECT.md
+│   ├── THREAT_MODEL.md     # Security analysis
+│   └── ARCHITECTURE.md     # System design
+├── PROJECT.md              # Project description
+└── LICENSE
 ```
 
 ## Core Features
@@ -83,12 +98,39 @@ persona_id = "standard"
 
 ## Development
 
+### Build Core
+
 ```bash
-# Build and test core
+# Build and test Rust library
 cd core
 cargo build
-cargo test
+cargo test --lib
 ```
+
+### Build Extension
+
+```bash
+# Install dependencies
+cd extension
+npm install
+
+# Development build (with source maps)
+npm run dev
+
+# Production build
+npm run build
+
+# Type checking
+npm run type-check
+```
+
+### Load Extension in Browser
+
+1. Build the extension: `npm run build`
+2. Open `chrome://extensions` (Chrome/Edge) or `about:debugging` (Firefox)
+3. Enable "Developer mode"
+4. Click "Load unpacked" and select the `extension/` directory
+5. Open any website to test - click the extension icon to see matched persona
 
 ## License
 
