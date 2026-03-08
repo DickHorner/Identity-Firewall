@@ -80,7 +80,10 @@ mod tests {
         ];
         let policy = Policy::new(personas, rules);
 
-        assert_eq!(policy.resolve_persona("api.example.com").unwrap().id, "exact");
+        assert_eq!(
+            policy.resolve_persona("api.example.com").unwrap().id,
+            "exact"
+        );
         assert_eq!(
             policy.resolve_persona("shop.example.com").unwrap().id,
             "suffix"

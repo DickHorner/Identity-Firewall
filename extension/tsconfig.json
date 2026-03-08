@@ -9,11 +9,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "types": ["chrome"]
+    "types": ["chrome", "node"]
   },
   "include": ["src/**/*", "ui/**/*"],
   "exclude": ["node_modules", "dist"]

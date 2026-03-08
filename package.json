@@ -1,0 +1,14 @@
+{
+  "name": "identity-firewall",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Root automation scripts for the Identity Firewall workspace",
+  "scripts": {
+    "build": "node scripts/run-rust.mjs build --workspace && npm --prefix extension run build",
+    "typecheck": "node scripts/run-rust.mjs check --workspace && npm --prefix extension run type-check",
+    "lint": "node scripts/run-rust.mjs fmt --all -- --check",
+    "test": "node scripts/run-rust.mjs test --workspace && npm --prefix extension run test",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "audit:motherlode": "pwsh -NoLogo -File ./.motherlode/scripts/audit.ps1"
+  }
+}

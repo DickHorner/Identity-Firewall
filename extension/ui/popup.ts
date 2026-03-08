@@ -4,6 +4,8 @@
  */
 
 import {
+  Persona,
+  PolicyConfig,
   GetConfigRequest,
   GetConfigResponse,
   ResolveRequest,
@@ -18,9 +20,9 @@ async function getCurrentHostname(): Promise<string> {
     active: true,
     currentWindow: true,
   });
-  
+
   if (!tab.url) return "unknown";
-  
+
   try {
     return new URL(tab.url).hostname;
   } catch {
@@ -31,11 +33,21 @@ async function getCurrentHostname(): Promise<string> {
 /**
  * Request config from background script
  */
-async function getConfig() {
-  return new Promise((resolve) => {
+async function getConfig(): Promise<PolicyConfig> {
+  return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
       { type: "get_config" } as GetConfigRequest,
-      (response: GetConfigResponse) => {
+      (response?: GetConfigResponse) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+
+        if (!response) {
+          reject(new Error("Background script did not return configuration."));
+          return;
+        }
+
         resolve(response.config);
       }
     );
@@ -45,12 +57,17 @@ async function getConfig() {
 /**
  * Request persona resolution from background script
  */
-async function resolvePersona(host: string) {
-  return new Promise((resolve) => {
+async function resolvePersona(host: string): Promise<Persona | null> {
+  return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
       { type: "resolve_persona", host } as ResolveRequest,
-      (response: ResolveResponse) => {
-        resolve(response.persona);
+      (response?: ResolveResponse) => {
+        if (chrome.runtime.lastError) {
+          reject(new Error(chrome.runtime.lastError.message));
+          return;
+        }
+
+        resolve(response?.persona ?? null);
       }
     );
   });
@@ -59,7 +76,7 @@ async function resolvePersona(host: string) {
 /**
  * Render persona options
  */
-function renderPersonas(personas: any[], currentPersona: any) {
+function renderPersonas(personas: Persona[], currentPersona: Persona | null): void {
   const container = document.getElementById("persona-list")!;
   container.innerHTML = "";
 
@@ -70,18 +87,27 @@ function renderPersonas(personas: any[], currentPersona: any) {
       div.classList.add("active");
     }
 
-    div.innerHTML = `
-      <div class="persona-radio"></div>
-      <div class="persona-name">
-        <strong>${persona.id}</strong>
-        <small>${persona.user_agent.substring(0, 50)}...</small>
-      </div>
-    `;
+    const radio = document.createElement("div");
+    radio.className = "persona-radio";
+
+    const nameWrapper = document.createElement("div");
+    nameWrapper.className = "persona-name";
+
+    const name = document.createElement("strong");
+    name.textContent = persona.id;
+
+    const summary = document.createElement("small");
+    summary.textContent = `${persona.user_agent.substring(0, 50)}...`;
+
+    nameWrapper.appendChild(name);
+    nameWrapper.appendChild(summary);
+    div.appendChild(radio);
+    div.appendChild(nameWrapper);
 
     div.addEventListener("click", () => {
       // Visual feedback only (actual persona tracking per-site would require more storage)
       document
-        .querySelectorAll(".persona-option")
+        .querySelectorAll<HTMLElement>(".persona-option")
         .forEach((el) => el.classList.remove("active"));
       div.classList.add("active");
     });

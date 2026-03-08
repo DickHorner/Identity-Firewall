@@ -14,11 +14,9 @@ impl RulePattern {
             RulePattern::Exact(h) => host.eq_ignore_ascii_case(h),
             RulePattern::Prefix(prefix) => host.starts_with(prefix),
             RulePattern::Suffix(suffix) => host.ends_with(suffix),
-            RulePattern::Glob(pattern) => {
-                glob::Pattern::new(pattern)
-                    .map(|p| p.matches(host))
-                    .unwrap_or(false)
-            }
+            RulePattern::Glob(pattern) => glob::Pattern::new(pattern)
+                .map(|p| p.matches(host))
+                .unwrap_or(false),
         }
     }
 

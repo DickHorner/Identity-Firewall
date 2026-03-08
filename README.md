@@ -98,30 +98,40 @@ persona_id = "standard"
 
 ## Development
 
+### Verify Everything
+
+```bash
+npm install --package-lock-only
+npm install --prefix extension
+npm run verify
+pwsh -NoLogo -File ./.motherlode/scripts/audit.ps1
+```
+
 ### Build Core
 
 ```bash
 # Build and test Rust library
-cd core
-cargo build
-cargo test --lib
+cargo build --workspace
+cargo test --workspace
 ```
 
 ### Build Extension
 
 ```bash
 # Install dependencies
-cd extension
-npm install
+npm install --prefix extension
 
 # Development build (with source maps)
-npm run dev
+npm --prefix extension run dev
 
 # Production build
-npm run build
+npm --prefix extension run build
 
 # Type checking
-npm run type-check
+npm --prefix extension run type-check
+
+# Extension tests
+npm --prefix extension run test
 ```
 
 ### Load Extension in Browser

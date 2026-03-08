@@ -53,10 +53,7 @@ pub struct FileLogger {
 
 impl FileLogger {
     pub fn new(path: impl AsRef<Path>) -> io::Result<Self> {
-        let file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)?;
+        let file = OpenOptions::new().create(true).append(true).open(path)?;
         Ok(Self {
             file: Mutex::new(file),
         })

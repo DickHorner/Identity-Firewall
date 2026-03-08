@@ -180,5 +180,3 @@ persona_id = "p2"
         assert_eq!(policy.rules().len(), 2);
     }
 }
-
-
