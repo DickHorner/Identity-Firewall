@@ -8,6 +8,13 @@ The Identity Firewall is a modular system that controls digital identity signals
 2. **Extension (TypeScript)**: Browser integration for header and JS spoofing
 3. **GUI (Tauri)**: Optional desktop interface for management
 
+## Boundary Enforcement
+
+- `core/` remains browser-agnostic and may not depend on `chrome`, `window`, `document`, or other extension-only APIs.
+- `extension/` owns browser integration and treats page hostnames, extension storage, and runtime messages as untrusted inputs that must be validated before persona resolution or script injection.
+- Logging records only high-level operational context such as host, persona id, and whether headers were rewritten; it must not dump full configs or raw spoofed header values.
+- Cross-layer integration stays explicit through documented interfaces and build/runtime boundaries rather than direct source imports from `extension/` into `core/`.
+
 ---
 
 ## Architecture Diagram

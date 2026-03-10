@@ -9,12 +9,13 @@ import {
   ResolveResponse,
 } from "./types";
 import { generateSpoofingScript } from "./spoofing";
+import { normalizeHostname } from "./validation";
 
 /**
  * Get the current hostname
  */
-function getCurrentHostname(): string {
-  return window.location.hostname;
+function getCurrentHostname(): string | null {
+  return normalizeHostname(window.location.hostname);
 }
 
 /**
@@ -24,7 +25,12 @@ async function getPersonaForHost(host: string): Promise<Persona | null> {
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
       { type: "resolve_persona", host } as ResolveRequest,
-      (response: ResolveResponse) => {
+      (response?: ResolveResponse) => {
+        if (chrome.runtime.lastError || !response || response.error) {
+          resolve(null);
+          return;
+        }
+
         resolve(response.persona || null);
       }
     );
@@ -41,7 +47,9 @@ function injectSpoofingCode(persona: Persona): void {
   script.setAttribute("data-identity-firewall", "true");
 
   // Inject as early as possible
-  (document.head || document.documentElement).prepend(script);
+  const target = document.head || document.documentElement;
+  target.prepend(script);
+  script.remove();
 }
 
 /**
@@ -49,31 +57,25 @@ function injectSpoofingCode(persona: Persona): void {
  */
 async function initialize() {
   const hostname = getCurrentHostname();
+  if (!hostname) {
+    return;
+  }
+
   const persona = await getPersonaForHost(hostname);
 
   if (persona) {
     // Inject spoofing code into page context
     injectSpoofingCode(persona);
 
-    console.log(
+    console.info(
       `[Identity Firewall] Applied persona "${persona.id}" to ${hostname}`
     );
-
-    // Log headers that would be rewritten (actual rewriting requires Manifest V3 hooks)
-    console.log(
-      `[Identity Firewall] User-Agent header: ${persona.user_agent}`
-    );
-    console.log(
-      `[Identity Firewall] Accept-Language header: ${persona.accept_language}`
-    );
   } else {
-    console.log(`[Identity Firewall] No persona matched for ${hostname}`);
+    console.info(`[Identity Firewall] No persona matched for ${hostname}`);
   }
 }
 
 // Run initialization
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initialize);
-} else {
-  initialize();
-}
+void initialize().catch((error: unknown) => {
+  console.error("[Identity Firewall] Failed to initialize content script.", error);
+});

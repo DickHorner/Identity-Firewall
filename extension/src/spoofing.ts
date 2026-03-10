@@ -105,8 +105,6 @@ export function generateSpoofingScript(persona: Persona): string {
     }
     return false;
   }
-
-  console.log('[Identity Firewall] Spoofing active for persona: ${persona.id}');
 })();
 `;
 }

@@ -104,7 +104,7 @@ persona_id = "standard"
 npm install --package-lock-only
 npm install --prefix extension
 npm run verify
-pwsh -NoLogo -File ./.motherlode/scripts/audit.ps1
+pwsh -NoLogo -ExecutionPolicy Bypass -File ./.motherlode/scripts/audit.ps1
 ```
 
 ### Build Core

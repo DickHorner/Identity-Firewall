@@ -8,8 +8,14 @@ From the repository root:
 npm install --package-lock-only
 npm install --prefix extension
 npm run verify
-pwsh -NoLogo -File ./.motherlode/scripts/audit.ps1
+pwsh -NoLogo -ExecutionPolicy Bypass -File ./.motherlode/scripts/audit.ps1
 ```
+
+## Motherlode Activation
+
+- Approved activation profile lives at `.motherlode/config/activation.profile.json`.
+- Repo-local custom checks enforce `trust_boundary_validation`, `sensitive_logging`, and `architecture_boundaries` in addition to baseline audit checks.
+- If the audit regresses, inspect `.motherlode/outputs/` and repair custom rule failures before broadening scope.
 
 ## Browser Extension Smoke Test
 

@@ -33,5 +33,5 @@ test("generates a script that embeds the spoofed persona values", () => {
   assert.match(script, /navigatorSpoof/);
   assert.match(script, /screenSpoof/);
   assert.match(script, /Mozilla\/5\.0 Example Browser/);
-  assert.match(script, /Identity Firewall/);
+  assert.doesNotMatch(script, /console\.log/);
 });

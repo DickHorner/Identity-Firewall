@@ -14,6 +14,7 @@ import {
   SetConfigResponse,
 } from "./types";
 import { createDefaultConfig, resolvePersonaForHost } from "./policy";
+import { normalizeHostname, validatePolicyConfig } from "./validation";
 
 // In-memory policy (in production, would load from Rust/WASM core)
 let currentConfig: PolicyConfig = {
@@ -23,6 +24,14 @@ let currentConfig: PolicyConfig = {
 
 // Map of hostname -> resolved persona (caching layer)
 const personaCache = new Map<string, Persona>();
+
+function logInfo(message: string): void {
+  console.info(`[Identity Firewall] ${message}`);
+}
+
+function logWarn(message: string): void {
+  console.warn(`[Identity Firewall] ${message}`);
+}
 
 /**
  * Resolve the appropriate persona for a given hostname
@@ -43,7 +52,16 @@ chrome.runtime.onMessage.addListener(
   ) => {
     if (message.type === "resolve_persona") {
       const req = message as ResolveRequest;
-      const persona = resolvePersona(req.host);
+      const host = normalizeHostname(req.host);
+      if (!host) {
+        sendResponse({
+          type: "persona_resolved",
+          error: "Invalid hostname.",
+        } satisfies ResolveResponse);
+        return;
+      }
+
+      const persona = resolvePersona(host);
       const response: ResolveResponse = {
         type: "persona_resolved",
         persona: persona || undefined,
@@ -57,8 +75,21 @@ chrome.runtime.onMessage.addListener(
       sendResponse(response);
     } else if (message.type === "set_config") {
       const req = message as SetConfigRequest;
-      currentConfig = req.config;
+      const validation = validatePolicyConfig(req.config);
+      if (!validation.ok) {
+        sendResponse({
+          type: "config_set",
+          success: false,
+          error: validation.error,
+        } satisfies SetConfigResponse);
+        return;
+      }
+
+      currentConfig = validation.value!;
       personaCache.clear(); // Clear cache when config changes
+      void chrome.storage.local
+        .set({ policyConfig: currentConfig })
+        .catch(() => logWarn("Failed to persist validated policy config."));
       const response: SetConfigResponse = {
         type: "config_set",
         success: true,
@@ -73,15 +104,32 @@ chrome.runtime.onMessage.addListener(
  */
 async function initialize() {
   const stored = await chrome.storage.local.get("policyConfig");
-  if (stored.policyConfig) {
-    currentConfig = stored.policyConfig;
+  const storedConfig = stored.policyConfig;
+  if (storedConfig) {
+    const validation = validatePolicyConfig(storedConfig);
+    if (validation.ok) {
+      currentConfig = validation.value!;
+    } else {
+      currentConfig = createDefaultConfig();
+      await chrome.storage.local.set({ policyConfig: currentConfig });
+      logWarn(
+        `Ignored invalid policyConfig from storage and restored defaults: ${validation.error}`
+      );
+    }
   } else {
     // Load default config (in production, would fetch from Rust core)
     currentConfig = createDefaultConfig();
     await chrome.storage.local.set({ policyConfig: currentConfig });
   }
-  console.log("[Identity Firewall] Initialized with config:", currentConfig);
+  logInfo(
+    `Initialized with ${currentConfig.personas.length} personas and ${currentConfig.rules.length} rules.`
+  );
 }
 
 // Initialize on load
-initialize().catch(console.error);
+initialize().catch((error: unknown) => {
+  console.error(
+    "[Identity Firewall] Failed to initialize background service worker.",
+    error
+  );
+});

@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "repo_name": "identity-firewall",
+  "approved_by": "jaspe",
+  "approved_on": "2026-03-10",
+  "repo_context": {
+    "primary_stack": [
+      "Rust",
+      "TypeScript",
+      "Browser Extension (Manifest V3)",
+      "PowerShell",
+      "Node.js"
+    ],
+    "repo_type": "monorepo",
+    "internet_facing": true,
+    "handles_sensitive_data": true,
+    "notes": [
+      "The extension runs on <all_urls> and injects spoofing code into page contexts.",
+      "The Rust core is a policy engine and logging layer that must remain browser-agnostic.",
+      "The repository primarily handles privacy-sensitive persona and host data rather than traditional secrets."
+    ]
+  },
+  "enabled_rules": {
+    "baseline_audit": true,
+    "risky_change_notes": true,
+    "architecture_boundaries": true,
+    "trust_boundary_validation": true,
+    "sensitive_logging": true,
+    "observability_minimums": false
+  },
+  "rule_rationale": {
+    "architecture_boundaries": "The repo has a stable split between the Rust core and MV3 extension, so source-level coupling should stay explicit and browser APIs must not leak into core.",
+    "trust_boundary_validation": "The extension resolves personas for internet-facing pages using storage and runtime messages, so hostnames and policy config must be validated before use.",
+    "sensitive_logging": "The project processes privacy-sensitive persona and host data, so logs must avoid raw spoofed headers, full config dumps, and page-context leakage.",
+    "observability_minimums": "Not enabled because this repo is a client-side tool and library, not a production service with centralized telemetry expectations.",
+    "risky_change_notes": "Keep diff-aware change notes active for sensitive future changes in auth, security, networking, persistence, or migrations."
+  },
+  "repo_specific_overrides": {
+    "min_codeowners": 2,
+    "sensitive_paths": [
+      "core/src/logging.rs",
+      "extension/manifest.json",
+      "extension/src/background.ts",
+      "extension/src/content.ts",
+      "extension/src/spoofing.ts",
+      "extension/src/validation.ts"
+    ],
+    "critical_paths": [
+      "core/src",
+      "extension/src/background.ts",
+      "extension/src/content.ts",
+      "extension/src/policy.ts",
+      "extension/src/spoofing.ts",
+      "docs/ARCHITECTURE.md",
+      "docs/THREAT_MODEL.md"
+    ],
+    "forbidden_log_patterns": [
+      "console\\.log\\(",
+      "Initialized with config:",
+      "User-Agent header:",
+      "Accept-Language header:"
+    ],
+    "allowed_log_exceptions": [
+      "core/src/logging.rs logs host, persona_id, and headers_rewritten only.",
+      "extension/src/background.ts may emit high-level info or warnings without config dumps.",
+      "extension/src/content.ts may emit high-level persona match events without raw spoofed values.",
+      "extension/ui/popup.ts may surface runtime errors through console.error for debugging."
+    ]
+  }
+}
